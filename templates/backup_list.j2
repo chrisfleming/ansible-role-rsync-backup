@@ -1,0 +1,8 @@
+
+{% if database_backup_location is defined %}
+{{database_backup_location}}
+{% endif %}
+
+{% for bd in backup_dirs %}
+/usr/local/bin/rsync-incremental-backup-remote {{ bd }}
+{% endfor %}

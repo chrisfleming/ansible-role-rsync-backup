@@ -1,0 +1,40 @@
+---
+- template:
+    src: rsync-incremental-backup-remote.j2
+    dest: /usr/local/bin/rsync-incremental-backup-remote
+    mode: 0755
+- template:
+    src: backup_list.j2
+    dest: /usr/local/bin/backup_list
+    mode: 0755
+- cron:
+    name: "backup_files"
+    minute: "0"
+    hour: "2"
+    job: "/usr/local/bin/backup_list > /dev/null"
+- name: make sure we have a ssh key
+  user:
+    name: root
+    generate_ssh_key: yes
+- name: fetch all public ssh keys
+  shell: cat ~/.ssh/id_rsa.pub
+  register: ssh_keys
+  tags:
+    - ssh
+- name: check_keys
+  debug:
+     msg: "{{ ssh_keys.stdout }}"
+  tags:
+    - ssh
+
+- name: deploy keys on all servers
+  authorized_key:
+    user: backups
+    key: "{{ item[0] }}"
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - "{{ ssh_keys.stdout }}"
+    - "{{groups['backup']}}"
+  tags:
+    - ssh
+

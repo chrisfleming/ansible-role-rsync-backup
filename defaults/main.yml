@@ -1,0 +1,3 @@
+---
+backup_prefix: "/home/backups/hosting"
+backup_server: "backups@flat.chrisfleming.org"
